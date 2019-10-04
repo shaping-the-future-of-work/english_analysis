@@ -1,0 +1,324 @@
+---
+title: "Global Shapers Community - Shaping the Future of Work Data Analysis | Section 2"
+output: html_notebook
+---
+
+```{r eval=FALSE}
+Try executing this chunk by clicking the *Run* button within the chunk or by placing your cursor inside it and pressing *Cmd+Shift+Enter*. 
+
+Add a new chunk by clicking the *Insert Chunk* button on the toolbar or by pressing *Cmd+Option+I*.
+
+When you save the notebook, an HTML file containing the code and output will be saved alongside it (click the *Preview* button or press *Cmd+Shift+K* to preview the HTML file). 
+
+The preview shows you a rendered HTML copy of the contents of the editor. Consequently, unlike *Knit*, *Preview* does not run any R code chunks. Instead, the output of the chunk when it was last run in the editor is displayed.
+```
+
+# Analysis Overview
+
+1. This analysis focuses on the survey responses from column "DK" to column to "EY".
+2. These questions have a set of options with fixed answers to select, so the analysis is more related to a description, correlations, and other interesting insights
+3. Below are the questions being covered under this section:
+    1. How would you define a “career”?
+    2. What do you think will be the main changes in the future of work? (Select up to 3 answers)
+    3. Do you believe that your education prepared you for the Future of Work? (10 = "did not prepare" ;  100 = "very well prepared")
+    4. How many years do you think you should stay in a position before making a career transition?
+    5. What is the most important skills required to successfully make a career transition (Select up to 3 answers)
+    6. How do you think these skills can be developed? (Select up to 3 answers)
+    7. In what ways can the participation of immigrants and refugees affect the labour market, economic growth and the social cohesion of a country?
+
+# Analysis
+
+#### Import the required packages
+
+```{r}
+setwd("/Users/vigneshvenkatachalam/Local Documents/8. Social Cause/1. Global Shapers/2. Future of Work/Data Analysis")
+
+install.packages("tidyverse")
+
+
+rm(list = ls())
+
+library(tidyr)
+
+```
+
+#### Import the Survey Results
+
+```{r}
+SurveyResponses <- read.csv("stfow_en_monkey_survey.csv", stringsAsFactors = FALSE, na.strings = c(""))
+
+## Display imported Dataset
+head(SurveyResponses)
+```
+
+#### Preparing the Analytical Dataset
+
+```{r}
+## Ensuring Column Names reflect the answer-choices rather than the question (in case of multiple answer questions)
+
+colnames(SurveyResponses)[colnames(SurveyResponses)=="How.would.you.define.a..career.."] <- "Career_1"
+colnames(SurveyResponses)[colnames(SurveyResponses)=="X.93"] <- "Career_2"
+colnames(SurveyResponses)[colnames(SurveyResponses)=="X.94"] <- "Career_3"
+
+colnames(SurveyResponses)[colnames(SurveyResponses)=="What.do.you.think.will.be.the.main.changes.in.the.future.of.work...Select.up.to.3.answers."] <- "FoWChanges_1"
+colnames(SurveyResponses)[colnames(SurveyResponses)=="X.95"] <- "FoWChanges_2"
+colnames(SurveyResponses)[colnames(SurveyResponses)=="X.96"] <- "FoWChanges_3"
+colnames(SurveyResponses)[colnames(SurveyResponses)=="X.97"] <- "FoWChanges_4"
+colnames(SurveyResponses)[colnames(SurveyResponses)=="X.98"] <- "FoWChanges_5"
+colnames(SurveyResponses)[colnames(SurveyResponses)=="X.99"] <- "FoWChanges_6"
+colnames(SurveyResponses)[colnames(SurveyResponses)=="X.100"] <- "FoWChanges_7"
+colnames(SurveyResponses)[colnames(SurveyResponses)=="X.101"] <- "FoWChanges_8"
+colnames(SurveyResponses)[colnames(SurveyResponses)=="X.102"] <- "FoWChanges_9"
+colnames(SurveyResponses)[colnames(SurveyResponses)=="X.103"] <- "FoWChanges_10"
+colnames(SurveyResponses)[colnames(SurveyResponses)=="X.104"] <- "FoWChanges_11"
+
+colnames(SurveyResponses)[colnames(SurveyResponses)=="Do.you.believe.that.your.education.prepared.you.for.the.Future.of.Work....10....did.not.prepare.....100....very.well.prepared..."] <- "EduPrepScore"
+
+colnames(SurveyResponses)[colnames(SurveyResponses)=="How.many.years.do.you.think.you.should.stay.in.a.position.before.making.a.career.transition."] <- "PositionYrs_1"
+colnames(SurveyResponses)[colnames(SurveyResponses)=="X.105"] <- "PositionYrs_2"
+colnames(SurveyResponses)[colnames(SurveyResponses)=="X.106"] <- "PositionYrs_3"
+colnames(SurveyResponses)[colnames(SurveyResponses)=="X.107"] <- "PositionYrs_4"
+colnames(SurveyResponses)[colnames(SurveyResponses)=="X.108"] <- "PositionYrs_5"
+
+colnames(SurveyResponses)[colnames(SurveyResponses)=="What.is.the.most.important.skills.required.to.successfully.make.a.career.transition..Select.up.to.3.answers."] <- "TransitionSkills_1"
+colnames(SurveyResponses)[colnames(SurveyResponses)=="X.109"] <- "TransitionSkills_2"
+colnames(SurveyResponses)[colnames(SurveyResponses)=="X.110"] <- "TransitionSkills_3"
+colnames(SurveyResponses)[colnames(SurveyResponses)=="X.111"] <- "TransitionSkills_4"
+colnames(SurveyResponses)[colnames(SurveyResponses)=="X.112"] <- "TransitionSkills_5"
+colnames(SurveyResponses)[colnames(SurveyResponses)=="X.113"] <- "TransitionSkills_6"
+colnames(SurveyResponses)[colnames(SurveyResponses)=="X.114"] <- "TransitionSkills_7"
+colnames(SurveyResponses)[colnames(SurveyResponses)=="X.115"] <- "TransitionSkills_8"
+colnames(SurveyResponses)[colnames(SurveyResponses)=="X.116"] <- "TransitionSkills_9"
+colnames(SurveyResponses)[colnames(SurveyResponses)=="X.117"] <- "TransitionSkills_10"
+
+colnames(SurveyResponses)[colnames(SurveyResponses)=="How.do.you.think.these.skills.can.be.developed...Select.up.to.3.answers."] <- "DevelopSkills_1"
+colnames(SurveyResponses)[colnames(SurveyResponses)=="X.118"] <- "DevelopSkills_2"
+colnames(SurveyResponses)[colnames(SurveyResponses)=="X.119"] <- "DevelopSkills_3"
+colnames(SurveyResponses)[colnames(SurveyResponses)=="X.120"] <- "DevelopSkills_4"
+colnames(SurveyResponses)[colnames(SurveyResponses)=="X.121"] <- "DevelopSkills_5"
+colnames(SurveyResponses)[colnames(SurveyResponses)=="X.122"] <- "DevelopSkills_6"
+
+colnames(SurveyResponses)[colnames(SurveyResponses)=="In.what.ways.can.the.participation.of.immigrants.and.refugees.affect.the.labour.market..economic.growth.and.the.social.cohesion.of.a.country."] <- "ImmigrantImpact_1"
+colnames(SurveyResponses)[colnames(SurveyResponses)=="X.123"] <- "ImmigrantImpact_2"
+colnames(SurveyResponses)[colnames(SurveyResponses)=="X.124"] <- "ImmigrantImpact_3"
+colnames(SurveyResponses)[colnames(SurveyResponses)=="X.125"] <- "ImmigrantImpact_4"
+colnames(SurveyResponses)[colnames(SurveyResponses)=="X.126"] <- "ImmigrantImpact_5"
+
+```
+
+```{r}
+## Removing Row 1 with answer options and NA values
+
+SurveyResponses <- SurveyResponses[-c(1),]
+
+```
+
+```{r}
+## Retaining only the relevant columns from "DK" to "EY", plus the Respondent ID
+
+DK2EY <- SurveyResponses[,c(1,115:155)]
+
+head(DK2EY)
+
+```
+
+```{r}
+DK2EY$EduPrepScore <- as.numeric(DK2EY$EduPrepScore)
+class(DK2EY$EduPrepScore)
+
+sum(is.na(DK2EY$EduPrepScore))
+## to make sure all rows have score responses in them, and there are no NA values
+
+DK2EY$EduPrepScore[which(is.na(DK2EY$EduPrepScore))] <- 1
+## assigning a value of 1 for those rows which captured no value
+
+sum(is.na(DK2EY$EduPrepScore))
+
+colnames(SurveyResponses)[colnames(SurveyResponses)=="Respondent.ID"] <- "Respondent_ID"
+sum(is.na(DK2EY$Respondent_ID))
+
+```
+
+```{r}
+## Combining single-answer responses into a single NEW column
+
+DK2EY_OneHot <- DK2EY
+
+## First converting the NA values in the columns to blanks, else paste() coerces them to the string "NA"
+
+DK2EY_OneHot$Career_1[which(is.na(DK2EY_OneHot$Career_1))] <- ""
+DK2EY_OneHot$Career_2[which(is.na(DK2EY_OneHot$Career_2))] <- ""
+DK2EY_OneHot$Career_3[which(is.na(DK2EY_OneHot$Career_3))] <- ""
+DK2EY_OneHot$Career <- paste(DK2EY_OneHot$Career_1,DK2EY_OneHot$Career_2,DK2EY_OneHot$Career_3)
+
+## To remove both leading and trailing white spaces from the final column
+DK2EY_OneHot$Career <- trimws(DK2EY_OneHot$Career, which = c("both"))
+
+## Now that the columns have been combined, we can do away with the multiple columns
+
+drops_career <- c("Career_1","Career_2","Career_3")
+DK2EY_OneHot <- DK2EY_OneHot[ , !(names(DK2EY_OneHot) %in% drops_career)]
+
+## Repeating the above process for the other single-answer columns
+
+DK2EY_OneHot$PositionYrs_1[which(is.na(DK2EY_OneHot$PositionYrs_1))] <- ""
+DK2EY_OneHot$PositionYrs_2[which(is.na(DK2EY_OneHot$PositionYrs_2))] <- ""
+DK2EY_OneHot$PositionYrs_3[which(is.na(DK2EY_OneHot$PositionYrs_3))] <- ""
+DK2EY_OneHot$PositionYrs_4[which(is.na(DK2EY_OneHot$PositionYrs_4))] <- ""
+DK2EY_OneHot$PositionYrs_5[which(is.na(DK2EY_OneHot$PositionYrs_5))] <- ""
+DK2EY_OneHot$PositionYrs <- paste(DK2EY_OneHot$PositionYrs_1,DK2EY_OneHot$PositionYrs_2,DK2EY_OneHot$PositionYrs_3,DK2EY_OneHot$PositionYrs_4,DK2EY_OneHot$PositionYrs_5)
+
+DK2EY_OneHot$PositionYrs <- trimws(DK2EY_OneHot$PositionYrs, which = c("both"))
+
+drops_positionyrs <- c("PositionYrs_1","PositionYrs_2","PositionYrs_3","PositionYrs_4","PositionYrs_5")
+DK2EY_OneHot <- DK2EY_OneHot[ , !(names(DK2EY_OneHot) %in% drops_positionyrs)]
+
+DK2EY_OneHot$ImmigrantImpact_1[which(is.na(DK2EY_OneHot$ImmigrantImpact_1))] <- ""
+DK2EY_OneHot$ImmigrantImpact_2[which(is.na(DK2EY_OneHot$ImmigrantImpact_2))] <- ""
+DK2EY_OneHot$ImmigrantImpact_3[which(is.na(DK2EY_OneHot$ImmigrantImpact_3))] <- ""
+DK2EY_OneHot$ImmigrantImpact_4[which(is.na(DK2EY_OneHot$ImmigrantImpact_4))] <- ""
+DK2EY_OneHot$ImmigrantImpact_5[which(is.na(DK2EY_OneHot$ImmigrantImpact_5))] <- ""
+DK2EY_OneHot$ImmigrantImpact <- paste(DK2EY_OneHot$ImmigrantImpact_1,DK2EY_OneHot$ImmigrantImpact_2,DK2EY_OneHot$ImmigrantImpact_3,DK2EY_OneHot$ImmigrantImpact_4,DK2EY_OneHot$ImmigrantImpact_5)
+
+DK2EY_OneHot$ImmigrantImpact <- trimws(DK2EY_OneHot$ImmigrantImpact, which = c("both"))
+
+drops_immigrantimpact <- c("ImmigrantImpact_1","ImmigrantImpact_2","ImmigrantImpact_3","ImmigrantImpact_4","ImmigrantImpact_5")
+DK2EY_OneHot <- DK2EY_OneHot[ , !(names(DK2EY_OneHot) %in% drops_immigrantimpact)]
+
+
+View(DK2EY_OneHot)
+
+```
+
+```{r}
+## One-hot encoding of multiple-answer responses
+
+DK2EY_OneHot$FoWChanges_1[which(!is.na(DK2EY_OneHot$FoWChanges_1))] <- "1"	
+DK2EY_OneHot$FoWChanges_1[which(is.na(DK2EY_OneHot$FoWChanges_1))] <- "0"
+DK2EY_OneHot$FoWChanges_1 <- as.factor(DK2EY_OneHot$FoWChanges_1)
+
+DK2EY_OneHot$FoWChanges_2[which(!is.na(DK2EY_OneHot$FoWChanges_2))] <- "1"	
+DK2EY_OneHot$FoWChanges_2[which(is.na(DK2EY_OneHot$FoWChanges_2))] <- "0"
+DK2EY_OneHot$FoWChanges_2 <- as.factor(DK2EY_OneHot$FoWChanges_2)
+
+DK2EY_OneHot$FoWChanges_3[which(!is.na(DK2EY_OneHot$FoWChanges_3))] <- "1"	
+DK2EY_OneHot$FoWChanges_3[which(is.na(DK2EY_OneHot$FoWChanges_3))] <- "0"
+DK2EY_OneHot$FoWChanges_3 <- as.factor(DK2EY_OneHot$FoWChanges_3)
+
+DK2EY_OneHot$FoWChanges_4[which(!is.na(DK2EY_OneHot$FoWChanges_4))] <- "1"	
+DK2EY_OneHot$FoWChanges_4[which(is.na(DK2EY_OneHot$FoWChanges_4))] <- "0"
+DK2EY_OneHot$FoWChanges_4 <- as.factor(DK2EY_OneHot$FoWChanges_4)
+
+DK2EY_OneHot$FoWChanges_5[which(!is.na(DK2EY_OneHot$FoWChanges_5))] <- "1"	
+DK2EY_OneHot$FoWChanges_5[which(is.na(DK2EY_OneHot$FoWChanges_5))] <- "0"
+DK2EY_OneHot$FoWChanges_5 <- as.factor(DK2EY_OneHot$FoWChanges_5)
+
+DK2EY_OneHot$FoWChanges_6[which(!is.na(DK2EY_OneHot$FoWChanges_6))] <- "1"	
+DK2EY_OneHot$FoWChanges_6[which(is.na(DK2EY_OneHot$FoWChanges_6))] <- "0"
+DK2EY_OneHot$FoWChanges_6 <- as.factor(DK2EY_OneHot$FoWChanges_6)
+
+DK2EY_OneHot$FoWChanges_7[which(!is.na(DK2EY_OneHot$FoWChanges_7))] <- "1"	
+DK2EY_OneHot$FoWChanges_7[which(is.na(DK2EY_OneHot$FoWChanges_7))] <- "0"
+DK2EY_OneHot$FoWChanges_7 <- as.factor(DK2EY_OneHot$FoWChanges_7)
+
+DK2EY_OneHot$FoWChanges_8[which(!is.na(DK2EY_OneHot$FoWChanges_8))] <- "1"	
+DK2EY_OneHot$FoWChanges_8[which(is.na(DK2EY_OneHot$FoWChanges_8))] <- "0"
+DK2EY_OneHot$FoWChanges_8 <- as.factor(DK2EY_OneHot$FoWChanges_8)
+
+DK2EY_OneHot$FoWChanges_9[which(!is.na(DK2EY_OneHot$FoWChanges_9))] <- "1"	
+DK2EY_OneHot$FoWChanges_9[which(is.na(DK2EY_OneHot$FoWChanges_9))] <- "0"
+DK2EY_OneHot$FoWChanges_9 <- as.factor(DK2EY_OneHot$FoWChanges_9)
+
+DK2EY_OneHot$FoWChanges_10[which(!is.na(DK2EY_OneHot$FoWChanges_10))] <- "1"	
+DK2EY_OneHot$FoWChanges_10[which(is.na(DK2EY_OneHot$FoWChanges_10))] <- "0"	
+DK2EY_OneHot$FoWChanges_10 <- as.factor(DK2EY_OneHot$FoWChanges_10)
+
+DK2EY_OneHot$FoWChanges_11[which(!is.na(DK2EY_OneHot$FoWChanges_11))] <- "1"	
+DK2EY_OneHot$FoWChanges_11[which(is.na(DK2EY_OneHot$FoWChanges_11))] <- "0"	
+DK2EY_OneHot$FoWChanges_11 <- as.factor(DK2EY_OneHot$FoWChanges_11)
+
+######
+
+DK2EY_OneHot$TransitionSkills_1[which(!is.na(DK2EY_OneHot$TransitionSkills_1))] <- "1"	
+DK2EY_OneHot$TransitionSkills_1[which(is.na(DK2EY_OneHot$TransitionSkills_1))] <- "0"	
+DK2EY_OneHot$TransitionSkills_1 <- as.factor(DK2EY_OneHot$TransitionSkills_1)
+
+DK2EY_OneHot$TransitionSkills_2[which(!is.na(DK2EY_OneHot$TransitionSkills_2))] <- "1"	
+DK2EY_OneHot$TransitionSkills_2[which(is.na(DK2EY_OneHot$TransitionSkills_2))] <- "0"	
+DK2EY_OneHot$TransitionSkills_2 <- as.factor(DK2EY_OneHot$TransitionSkills_2)
+
+DK2EY_OneHot$TransitionSkills_3[which(!is.na(DK2EY_OneHot$TransitionSkills_3))] <- "1"	
+DK2EY_OneHot$TransitionSkills_3[which(is.na(DK2EY_OneHot$TransitionSkills_3))] <- "0"	
+DK2EY_OneHot$TransitionSkills_3 <- as.factor(DK2EY_OneHot$TransitionSkills_3)
+
+DK2EY_OneHot$TransitionSkills_4[which(!is.na(DK2EY_OneHot$TransitionSkills_4))] <- "1"	
+DK2EY_OneHot$TransitionSkills_4[which(is.na(DK2EY_OneHot$TransitionSkills_4))] <- "0"	
+DK2EY_OneHot$TransitionSkills_4 <- as.factor(DK2EY_OneHot$TransitionSkills_4)
+
+DK2EY_OneHot$TransitionSkills_5[which(!is.na(DK2EY_OneHot$TransitionSkills_5))] <- "1"	
+DK2EY_OneHot$TransitionSkills_5[which(is.na(DK2EY_OneHot$TransitionSkills_5))] <- "0"	
+DK2EY_OneHot$TransitionSkills_5 <- as.factor(DK2EY_OneHot$TransitionSkills_5)
+
+DK2EY_OneHot$TransitionSkills_6[which(!is.na(DK2EY_OneHot$TransitionSkills_6))] <- "1"	
+DK2EY_OneHot$TransitionSkills_6[which(is.na(DK2EY_OneHot$TransitionSkills_6))] <- "0"	
+DK2EY_OneHot$TransitionSkills_6 <- as.factor(DK2EY_OneHot$TransitionSkills_6)
+
+DK2EY_OneHot$TransitionSkills_7[which(!is.na(DK2EY_OneHot$TransitionSkills_7))] <- "1"	
+DK2EY_OneHot$TransitionSkills_7[which(is.na(DK2EY_OneHot$TransitionSkills_7))] <- "0"	
+DK2EY_OneHot$TransitionSkills_7 <- as.factor(DK2EY_OneHot$TransitionSkills_7)
+
+DK2EY_OneHot$TransitionSkills_8[which(!is.na(DK2EY_OneHot$TransitionSkills_8))] <- "1"	
+DK2EY_OneHot$TransitionSkills_8[which(is.na(DK2EY_OneHot$TransitionSkills_8))] <- "0"	
+DK2EY_OneHot$TransitionSkills_8 <- as.factor(DK2EY_OneHot$TransitionSkills_8)
+
+DK2EY_OneHot$TransitionSkills_9[which(!is.na(DK2EY_OneHot$TransitionSkills_9))] <- "1"	
+DK2EY_OneHot$TransitionSkills_9[which(is.na(DK2EY_OneHot$TransitionSkills_9))] <- "0"	
+DK2EY_OneHot$TransitionSkills_9 <- as.factor(DK2EY_OneHot$TransitionSkills_9)
+
+DK2EY_OneHot$TransitionSkills_10[which(!is.na(DK2EY_OneHot$TransitionSkills_10))] <- "1"	
+DK2EY_OneHot$TransitionSkills_10[which(is.na(DK2EY_OneHot$TransitionSkills_10))] <- "0"	
+DK2EY_OneHot$TransitionSkills_10 <- as.factor(DK2EY_OneHot$TransitionSkills_10)
+
+######
+
+DK2EY_OneHot$DevelopSkills_1[which(!is.na(DK2EY_OneHot$DevelopSkills_1))] <- "1"	
+DK2EY_OneHot$DevelopSkills_1[which(is.na(DK2EY_OneHot$DevelopSkills_1))] <- "0"	
+DK2EY_OneHot$DevelopSkills_1 <- as.factor(DK2EY_OneHot$DevelopSkills_1)
+
+DK2EY_OneHot$DevelopSkills_2[which(!is.na(DK2EY_OneHot$DevelopSkills_2))] <- "1"	
+DK2EY_OneHot$DevelopSkills_2[which(is.na(DK2EY_OneHot$DevelopSkills_2))] <- "0"	
+DK2EY_OneHot$DevelopSkills_2 <- as.factor(DK2EY_OneHot$DevelopSkills_2)
+
+DK2EY_OneHot$DevelopSkills_3[which(!is.na(DK2EY_OneHot$DevelopSkills_3))] <- "1"	
+DK2EY_OneHot$DevelopSkills_3[which(is.na(DK2EY_OneHot$DevelopSkills_3))] <- "0"	
+DK2EY_OneHot$DevelopSkills_3 <- as.factor(DK2EY_OneHot$DevelopSkills_3)
+
+DK2EY_OneHot$DevelopSkills_4[which(!is.na(DK2EY_OneHot$DevelopSkills_4))] <- "1"	
+DK2EY_OneHot$DevelopSkills_4[which(is.na(DK2EY_OneHot$DevelopSkills_4))] <- "0"	
+DK2EY_OneHot$DevelopSkills_4 <- as.factor(DK2EY_OneHot$DevelopSkills_4)
+
+DK2EY_OneHot$DevelopSkills_5[which(!is.na(DK2EY_OneHot$DevelopSkills_5))] <- "1"	
+DK2EY_OneHot$DevelopSkills_5[which(is.na(DK2EY_OneHot$DevelopSkills_5))] <- "0"	
+DK2EY_OneHot$DevelopSkills_5 <- as.factor(DK2EY_OneHot$DevelopSkills_5)
+
+DK2EY_OneHot$DevelopSkills_6[which(!is.na(DK2EY_OneHot$DevelopSkills_6))] <- "1"	
+DK2EY_OneHot$DevelopSkills_6[which(is.na(DK2EY_OneHot$DevelopSkills_6))] <- "0"	
+DK2EY_OneHot$DevelopSkills_6 <- as.factor(DK2EY_OneHot$DevelopSkills_6)
+
+## Displaying the ADS
+
+View(DK2EY_OneHot)
+
+```
+
+```{r}
+
+## Outputting the ADS onto a CSV
+
+write.csv(DK2EY_OneHot, file = "Section2_ADS.csv")
+
+```
+
+# Further Insights incorporating demographic data
+
+Work in Progress
